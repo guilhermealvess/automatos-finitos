@@ -86,7 +86,7 @@ class Automaton:
                 self.__stack.append(symbol)
             return edge.getDest(), self.__stack
         else:
-            return
+            raise ValueError('Não existe um caminho válido esta transição: (Q{}, {}, {})'.format(stateCurrent.getValue(), char, ''.join(list(reversed(self.__stack)))))
         
 
     def isAcceptState(self, state:Node) -> bool:
@@ -105,7 +105,7 @@ def processWord(automaton:Automaton, word:str) -> bool:
     for char in word:
         try:
             currentState, stack = automaton.processState(currentState, char, stack)
-        except:
+        except Exception as e:
             return False
     
     if not automaton.isAcceptState(currentState):

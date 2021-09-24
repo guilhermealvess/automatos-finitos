@@ -46,10 +46,6 @@ class Automaton:
         self.__edges = set()
         self.__symbols = symbols
         self.__stackSymbols = stackSymbols
-        self.__stack = [stackSymbols[-1]]
-
-    def reset_stack(self):
-        self.__stack = ['Z']
 
     def getSymbolOnTop(self) -> str:
         if len(self.__stack) == 0:
@@ -82,11 +78,13 @@ class Automaton:
 
     def verify(self, stateCurrent:Node):
         if not self.isAcceptState(stateCurrent):
-            return
-        raise Exception
+            return False
+        return True
 
     def consumesWord(self, edge:Edge, word:str)->str:
-        if edge.getCost() != '-':
+        if word == "-":
+            return ""
+        if edge.getCost() == word[0]:
             return word[1:]
         return word
 
@@ -95,55 +93,18 @@ class Automaton:
         if list(word):
             char = word[0]
         else:
-            self.verify(stateCurrent)
-            return
+            return self.verify(stateCurrent)
 
         edges = set(filter(lambda e: e.getOrigin() == stateCurrent and (e.getCost() == char or e.getCost() == "-") and e.getPopStack() == self.getTopElement(stack), self.__edges))
         transictions = list(map(lambda e:(e.getDest(), self.consumesWord(e, word), self.updateStack(stack, e)), edges))
 
-        if not transictions:    return
+        if not transictions:    return False
 
         for newState, newWord, newStack in transictions:
-            try:
-                self.run(newState, newWord, newStack)
-            except Exception as e:
-                print(e)
-                raise Exception
-
-
-    def processState(self, stateCurrent:Node, char: str, stack:list) -> tuple:
-        if not self.__symbols.intersection({char}):
-            raise ValueError('Cadeia inválida')
-
-        def updateStack(s:list, edge: Edge):
-            s.pop()
-            for symbol in edge.getPushStack():
-                if symbol != "-":
-                    s.append(symbol)
-            return s
-
-
-        edges = set(filter(lambda e:e.getOrigin() == stateCurrent and e.getCost() == char or e.getCost() == "-" and e.getPopStack() == stack[-1], self.__edges))
-        set(map(lambda e: (e.getDest(), updateStack(stack)), edges))
-
-        for edge in self.__edges:
-            if edge.getOrigin() == stateCurrent and edge.getCost() == char and edge.getPopStack() == stack[-1]:
-                self.__stack.pop()
-                for symbol in edge.getPushStack():
-                    if symbol != "-":
-                        self.__stack.append(symbol)
-                return edge.getDest(), self.__stack
-
-        # Processando uma cadeia vazia
-        edges = set(filter(lambda e: e.getCost() == char == "-" and e.getOrigin() == stateCurrent and e.getPopStack() == stack[-1], self.__edges))
-        if len(edges) > 0:
-            self.__stack.pop()
-            for symbol in edge.getPushStack():
-                self.__stack.append(symbol)
-            return edge.getDest(), self.__stack
-        else:
-            raise ValueError('Não existe um caminho válido esta transição: (Q{}, {}, {})'.format(stateCurrent.getValue(), char, ''.join(list(reversed(self.__stack)))))
-        
+            if self.run(newState, newWord, newStack):
+                return True
+        return False
+            
 
     def isAcceptState(self, state:Node) -> bool:
         return self.__acceptStates.intersection({state})
@@ -153,32 +114,15 @@ class Automaton:
             print("Q{} -> {} -> Q{}".format(edge.getOrigin().getValue(), edge.getCost(), edge.getDest().getValue()))
 
 
-# FunÃ§Ã£o que executa uma cadeia de caracter no autômato
+# Funsão que executa uma cadeia de caracter no autômato
 def processWord(automaton:Automaton, word:str) -> bool:
-    print('PALAVRA A PROCESSAR: ', word)
-
-    automaton.reset_stack()
+    #print('PALAVRA A PROCESSAR: ', word)
 
     currentState = automaton.getStartState()
     stack = ['Z']
 
-    try:
-        automaton.run(currentState, word, stack)
-        return False
-    except Exception as e:
-        return True
-
-
-    #for char in word:
-    #    try:
-    #        currentState, stack = automaton.processState(currentState, char, stack)
-    #    except Exception as e:
-    #        return False
-
-    #if not automaton.isAcceptState(currentState):
-    #    return False
-    #
-    #return True
+    return automaton.run(currentState, word, stack)
+    
 
 def main():
     ACCEPT = "aceita"
@@ -242,7 +186,6 @@ def main():
     for i in range(numInputsWords):
 
         w = input()
-        w = 'abba'
         result = processWord(graph, w + SYMBOL_EMPTY)
 
         if result:
@@ -252,12 +195,12 @@ def main():
             output.append(REJECT)
             print(REJECT)
 
-        print(OUTPUT[i].upper() + '\n')
+        #print(OUTPUT[i].upper() + '\n')
 
-    if OUTPUT == output:
-        print('\n******* OK *******\n')
-    else:
-        print('\n******* ERR *******\n')
+    #if OUTPUT == output:
+    #    print('\n******* OK *******\n')
+    #else:
+    #    print('\n******* ERR *******\n')
 
 
 if __name__ == '__main__':

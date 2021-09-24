@@ -17,10 +17,6 @@ class Edge:
         self.__popStack = pop
         self.__pushStack = push
 
-    def __setPushStack(self, push):
-        if push == "-":
-            return
-
     def getOrigin(self) -> Node:
         return self.__origin
 
@@ -46,11 +42,6 @@ class Automaton:
         self.__edges = set()
         self.__symbols = symbols
         self.__stackSymbols = stackSymbols
-
-    def getSymbolOnTop(self) -> str:
-        if len(self.__stack) == 0:
-            return None
-        return self.__stack[-1]
 
     def getAcceptState(self) -> set:
         return self.__acceptStates
@@ -82,14 +73,11 @@ class Automaton:
         return True
 
     def consumesWord(self, edge:Edge, word:str)->str:
-        if word == "-":
-            return ""
         if edge.getCost() == word[0]:
             return word[1:]
         return word
 
     def run(self, stateCurrent:Node, word:str, stack:list):
-
         if list(word):
             char = word[0]
         else:
@@ -104,7 +92,6 @@ class Automaton:
             if self.run(newState, newWord, newStack):
                 return True
         return False
-            
 
     def isAcceptState(self, state:Node) -> bool:
         return self.__acceptStates.intersection({state})
@@ -195,12 +182,12 @@ def main():
             output.append(REJECT)
             print(REJECT)
 
-        #print(OUTPUT[i].upper() + '\n')
+        """ print(OUTPUT[i].upper() + '\n')
 
-    #if OUTPUT == output:
-    #    print('\n******* OK *******\n')
-    #else:
-    #    print('\n******* ERR *******\n')
+    if OUTPUT == output:
+        print('\n******* OK *******\n')
+    else:
+        print('\n******* ERR *******\n') """
 
 
 if __name__ == '__main__':

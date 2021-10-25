@@ -35,16 +35,13 @@ class TuringMachine:
     def add_transition(self, transition:Transition):
         if transition != None:  self.__transitions.add(transition)
 
-    def show(self):
-        ...
-
     def readerTape(self) -> str:   return self.__tape[self.__cursor]
 
     def writerTape(self, char): self.__tape[self.__cursor]  = char
 
     def execute(self, jail: str) -> bool:
         # nao pode haver o simbolo de espaço em branco pertencente a cadeia de entrada
-        if self.__blank in jail:    raise Exception('')
+        if self.__blank in jail:    raise Exception('Símbolo de espaço em branco não pode estar na cadeia de entrada')
 
         # Resetando posição do cursor na fita
         self.__cursor = 0

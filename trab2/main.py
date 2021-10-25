@@ -1,11 +1,9 @@
 # Classe para os estados dentro do grafo
 class Node:
 
-    def __init__(self, value: str) -> None:
-        self.__value = value
+    def __init__(self, value: str) -> None: self.__value = value
 
-    def getValue(self) -> str:
-        return self.__value
+    def getValue(self) -> str:  return self.__value
 
 #Classe para representar as ligaÃ§Ãµes dos estados dentro do grafo
 class Edge:
@@ -43,21 +41,15 @@ class Automaton:
         self.__symbols = symbols
         self.__stackSymbols = stackSymbols
 
-    def getAcceptState(self) -> set:
-        return self.__acceptStates
+    def getAcceptState(self) -> set:    return self.__acceptStates
 
-    def getStartState(self) -> Node:
-        return self.__startNode
+    def getStartState(self) -> Node:    return self.__startNode
 
     def insertEdge(self, src: Node, dst: Node, cost: str, pop: str, push:str):
         newEdge = Edge(src, dst, cost, pop, push)
         self.__edges.add(newEdge)
 
-    def getTopElement(self, s:list):
-        if s:
-            return s[-1]
-        else:
-            return []
+    def getTopElement(self, s:list):    return s[-1] if s else []
 
     def updateStack(self, s:list, edge:Edge):
         new_stack = s.copy()
@@ -89,8 +81,7 @@ class Automaton:
         if not transictions:    return False
 
         for newState, newWord, newStack in transictions:
-            if self.run(newState, newWord, newStack):
-                return True
+            if self.run(newState, newWord, newStack):   return True
         return False
 
     def isAcceptState(self, state:Node) -> bool:
@@ -146,8 +137,7 @@ def main():
         nodes[state.getValue()] = state
 
     numTransition = int(input())
-    if numTransition > 50:
-        exit()
+    if numTransition > 50:  exit()
 
 
     graph = Automaton(start=stateInit, acceptStates=acceptanceState, symbols=symbols, stackSymbols=stackSymbols)
@@ -167,28 +157,13 @@ def main():
     numInputsWords = int(input())
 
     # Coletando e processando as cadeias e armazenando o resultado
-    output = []
-    OUTPUT = ['aceita', 'aceita', 'rejeita', 'rejeita', 'rejeita', 'rejeita', 'aceita', 'rejeita', 'aceita', 'rejeita']     #trabalho
-    OUTPUT = ['aceita', 'aceita', 'rejeita', 'aceita', 'rejeita', 'aceita', 'rejeita', 'aceita', 'rejeita', 'aceita']       #TESTE
-    for i in range(numInputsWords):
+    for _ in range(numInputsWords):
 
         w = input()
-        result = processWord(graph, w + SYMBOL_EMPTY)
 
-        if result:
-            output.append(ACCEPT)
-            print(ACCEPT)
-        else:
-            output.append(REJECT)
-            print(REJECT)
-
-        """ print(OUTPUT[i].upper() + '\n')
-
-    if OUTPUT == output:
-        print('\n******* OK *******\n')
-    else:
-        print('\n******* ERR *******\n') """
+        print(ACCEPT) if processWord(graph, w + SYMBOL_EMPTY) else print(REJECT)
 
 
 if __name__ == '__main__':
+
     main()

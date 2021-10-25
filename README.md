@@ -5,3 +5,9 @@ Este projeto trata-se de implementações de Autômatos Finitos de trabalhos par
 ## Trabalho 1: Autômatos Finitos Não Determinísticos
 
 ## Trabalho 2: Autômatos Finitos de Pilha Não Determinísticos
+
+## Trabalho 3: Máquina de Turing não Determinística
+
+```bash
+python3 trab3/main.py < trab3/input.txt 
+```

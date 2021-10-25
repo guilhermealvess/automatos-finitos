@@ -1,104 +1,122 @@
-
-
-class State:
-
-    def __init__(self, value) -> None:
-        self.__value = value
-
-    def getValue(self): return self.__value
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 class Transition:
 
-    def __init__(self, src: State, dst: State, before: str, later:str, moviment_tape: str) -> None:
+    def __init__(self, src: int, dst: int, read: str, write:str, moviment_tape: str) -> None:
         self.__src = src
         self.__dst = dst
-        self.__before = before
-        self.__later = later
+        self.__read = read
+        self.__write = write
         self.__moviment_tape = moviment_tape
 
-    def getOrigin(self):    return self.__src
+    def getOrigin(self)->int:    return self.__src
 
-    def getDest(self):      return self.__dst
+    def getDest(self)->int:      return self.__dst
 
-    def getBefore(self):    return self.__before
+    def getRead(self)->str:    return self.__read
 
-    def getLater(self):     return self.__later
+    def getWrite(self)->str:     return self.__write
 
-    def getMovimentTape(self):      return self.__moviment_tape
+    def get_move_cursor(self)->int:      return +1 if self.__moviment_tape == 'D' else -1
 
 
-class Automaton:
+class TuringMachine:
 
-    def __init__(self, state_accept:set, init_state: State) -> None:
+    def __init__(self, acceptance_state:int, init_state: int) -> None:
         self.__transitions = set()
-        self.__state_accept = state_accept
+        self.__acceptance_state = acceptance_state
         self.__init_state = init_state
+        self.__blank = 'B'
+        self.__cursor = 0
+        self.__tape = list()
 
+    #Adicionado transições para a máquina de Turing
     def add_transition(self, transition:Transition):
         if transition != None:  self.__transitions.add(transition)
 
     def show(self):
         ...
 
-    def isAcceptState(self, state: State) -> bool:
-        return self.__state_accept.intersection({state})
+    def readerTape(self) -> str:   return self.__tape[self.__cursor]
 
-    def execute(self, word: str, tape: list) -> bool:
-        tape = list()
-        return self.process(self.__init_state, word, tape)
+    def writerTape(self, char): self.__tape[self.__cursor]  = char
 
-    def process(self, currentState, word, tape):
-        if tape == []:
-            return True
-        return self.process(currentState, word, tape)
+    def execute(self, jail: str) -> bool:
+        # nao pode haver o simbolo de espaço em branco pertencente a cadeia de entrada
+        if self.__blank in jail:    raise Exception('')
 
+        # Resetando posição do cursor na fita
+        self.__cursor = 0
 
-def make_states(numStates):
-    nodes = dict()
-    for state in range(numStates):
-        nodes[state] = State(value=state)
-    return nodes
+        # escrevendo a cadeia no inicio da fita
+        jail = jail.replace('-', '')
+        jail += self.__blank
+        self.__tape = list( map(lambda char:char, jail) )
+
+        return self.process(self.__init_state, self.readerTape())
+
+    # Função de transição recursiva
+    def process(self, currentState:int, reader:str) -> bool:
+        if currentState == self.__acceptance_state: return True
+
+        # obetendo transiçoes validas de acordo com estado atual e char na fita apontado pelo cursor da maquina
+        transisitions = list(filter(lambda t: t.getOrigin() == currentState and t.getRead() == reader, self.__transitions))
+        transisition = transisitions[0] if len(transisitions) == 1 else None
+        # Nao ha nenhuma transição valida logo a maquina rejeita a cadeia
+        if not transisition:    return False
+
+        # Realizando o efeito de acorodo com a a transição obtida
+        self.writerTape(transisition.getWrite())
+        self.__cursor += transisition.get_move_cursor()
+        # Movimento do cursor inválido mantendo ele na primeira posição
+        self.__cursor = 0 if self.__cursor < 0 else self.__cursor
+        return self.process(transisition.getDest(), self.readerTape())
 
 
 def main():
 
     ACCEPT = 'aceita'
     REJECT = 'rejeita'
-    STATE_INITIAL = 0
+    RIGHT = 'D'
+    LEFT = 'E'
 
     numStates = int(input())
-    states_mapper = make_states(numStates)
+    if numStates <= 0:  raise Exception('Entrada inválida, input->' + str(numStates))
+    states = list(range(numStates))
 
     row = input().split()
     #numSymbolsFinals = row[0]
     symbolsFinals = set(row[1:])
     
     row = input().split()
-    #numSymbolsTape
+    #numSymbolsTape = row[0]
     symbolsTape = set(row[1:])
 
-    index = int(input())
-    if index >= numStates:
-        raise Exception('')
+    acceptance_state_index = int(input())
+    if acceptance_state_index >= numStates:
+        raise Exception('Indice do estado de aceitação inválido, input->' + str(acceptance_state_index) + ', numero de estados->', numStates)
 
-    machine = Automaton(init_state=states_mapper.get(STATE_INITIAL, None))
+    turing_machine = TuringMachine(init_state=states[0], acceptance_state=states[acceptance_state_index])
 
     numTransiction = int(input())
     for _ in range(numTransiction):
-        row = input()
-        machine.add_transition( Transition( src=row[0], dst=row[2], before=row[1], later=row[3], moviment=row[4]) )
+        row = input().split()
+        if not {RIGHT, LEFT}.intersection(row[4]):   raise Exception("Símbolo de movimento do cursor deve pertencer ao conjunto {E, D}")
+        turing_machine.add_transition( Transition( src=int(row[0]), dst=int(row[2]), read=row[1], write=row[3], moviment_tape=row[4] ) )
 
-    numJail = int(input())
-    for _ in range(numJail):
-        word = input()
+    numInputJail = int(input())
+    for _ in range(numInputJail):
+        jail = input()
 
-        result = machine.execute(word)
+        try:
+            result = turing_machine.execute(jail)
+        except Exception as e:
+            print('\nFALHA AO PROCESSAR A CADEIA: ', jail)
+            raise e
 
-        if result:
-            print(ACCEPT)
-        else:
-            print(REJECT)
+        # True: ACCEPT / FALSE: REJECT
+        print(ACCEPT) if result else print(REJECT)
 
 
 if __name__ == '__main__':
